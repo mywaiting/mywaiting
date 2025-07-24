@@ -1,0 +1,107 @@
+# 
+# 此 github workflow 用于在仓库创建 issue 时自动收集所有 issues 并打包发布为网站
+# 
+# 发布网站使用 mywaiting/treehole 项目打包所有 issues 内容
+# - output 部分将发布为 gh-pages 分支作为静态网站发布
+# - backup 部分将自动备份到 ./backup 目录作为已发布内容备份
+# 
+# 注意：每次修改完此文件，请手动检验一遍其内容 https://rhysd.github.io/actionlint/
+# 
+
+name: Deploy static content to Github Pages and make Backup
+
+# 事件触发：
+# issues 增删查改时触发构建整个网站内容
+# comments 暂时不触发构建整个网站内容/以后考虑开放
+on:
+  workflow_dispatch:
+  issues:
+    types:
+      - opened
+      - edited
+      - deleted
+      - closed
+      - reopened
+  #     - labeled
+  #     - unlabeled
+  # issue_comment:
+  #   types:
+  #     - created
+  #     - edited
+  #     - deleted
+
+permissions:
+  contents: write # 用于 push 到 master 分支（backup）
+  pages: write    # 用于部署 GitHub Pages
+  id-token: write # 用于 GitHub Pages OIDC 身份验证
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pages: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_USER: ${{ github.repository_owner }}
+      GH_REPO: ${{ github.event.repository.name }}
+      DEBUG: true
+      SITE_TITLE: mywaiting
+      SITE_DESC: True love waits, always
+      BASE_URL: https://mywaiting.com
+      DEFAULT_LOCALE: zh_CN
+    steps:
+      - name: Checkout
+        users: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 保证可以切换分支、提交代码
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Download and install treehole (latest release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo mywaiting/treehole --pattern "*.whl" --dir /tmp/treehole-download
+          pip install /tmp/treehole-download/*.whl
+      
+      - name: Generate Markdown
+        run: |
+          treehole --debug=${DEBUG} --github_owner=${GH_USER} --github_repo=${GH_REPO} --site_title=${SITE_TITLE} --site_desc=${SITE_DESC} --base_url=${BASE_URL} --default_locale=${DEFAULT_LOCALE} 
+      
+      # - name: Commit backup data to master branch
+      #   run: |
+      #     git config user.name "${GH_USER}"
+      #     git config user.email "${GH_USER}@users.noreply.github.com"
+      #     git checkout master
+      #     mkdir -p backup
+      #     cp -r ./data/backup/* ./backup/ || true
+      #     git add backup
+      #     git commit -m "Update backup from workflow run" || echo "Nothing to commit"
+      #     git push origin master
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: pages-artifact
+          path: ./data/output
+      
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+        id: deployment
+        with:
+          artifact_name: pages-artifact
+
