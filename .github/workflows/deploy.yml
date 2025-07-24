@@ -77,7 +77,7 @@ jobs:
       
       - name: Generate Markdown
         run: |
-          treehole --debug=${{ DEBUG }}  --github_owner=${{ GH_USER }} --github_repo=${{ GH_REPO }} --github_token=${{ GH_TOKEN }} --site_title=${{ SITE_TITLE }} --site_desc=${{ SITE_DESC }} --base_url=${{ BASE_URL }} --default_locale=${{ DEFAULT_LOCALE }} 
+          treehole --debug=${DEBUG}  --github_owner=${GH_USER} --github_repo=${GH_REPO} --github_token=${GH_TOKEN} --site_title=${SITE_TITLE} --site_desc=${SITE_DESC} --base_url=${BASE_URL} --default_locale=${DEFAULT_LOCALE} 
       
       # - name: Commit backup data to master branch
       #   run: |
