@@ -95,7 +95,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-      
-      - name: Output deployed URL
-        run: echo "✅ Your site is live at: ${{ steps.deployment.outputs.page_url }}"
 
