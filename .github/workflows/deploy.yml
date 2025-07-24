@@ -41,13 +41,7 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      pages: write
     env:
       GH_TOKEN: ${{ github.token }}
       GH_USER: ${{ github.repository_owner }}
@@ -96,12 +90,12 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          name: pages-artifact
           path: ./data/output
       
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
         id: deployment
-        with:
-          artifact_name: pages-artifact
+        uses: actions/deploy-pages@v4
+      
+      - name: Output deployed URL
+        run: echo "✅ Your site is live at: ${{ steps.deployment.outputs.page_url }}"
 
