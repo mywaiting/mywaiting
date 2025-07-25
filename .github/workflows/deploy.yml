@@ -47,10 +47,10 @@ jobs:
       GH_USER: ${{ github.repository_owner }}
       GH_REPO: ${{ github.event.repository.name }}
       DEBUG: true
-      SITE_TITLE: mywaiting
-      SITE_DESC: True love waits, always
-      BASE_URL: https://mywaiting.com
-      DEFAULT_LOCALE: zh_CN
+      SITE_TITLE: "mywaiting"
+      SITE_DESC: "True love waits, always"
+      BASE_URL: "https://mywaiting.com"
+      DEFAULT_LOCALE: "zh_CN"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
